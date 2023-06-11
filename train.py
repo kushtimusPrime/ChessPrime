@@ -48,6 +48,7 @@ class ChessTrainer:
             7 : [0,0,0,0,0,1,0],
             8 : [0,0,0,0,0,0,1],
         }
+        self.board_ = chess.Board()
     
     def initializeData(self):
         for pgn_file_name in self.pgn_file_names_:
@@ -68,11 +69,37 @@ class ChessTrainer:
                     print("Tough")
         print("Game count: " + str(self.total_num_games_))
 
+    def makeMatrix(self,board): 
+        pgn = board.epd()
+        foo = []  
+        pieces = pgn.split(" ", 1)[0]
+        rows = pieces.split("/")
+        for row in rows:
+            foo2 = []  
+            for thing in row:
+                if thing.isdigit():
+                    for i in range(0, int(thing)):
+                        foo2.append('.')
+                else:
+                    foo2.append(thing)
+            foo.append(foo2)
+        return foo
+
+    def translate(self,matrix,chess_dict):
+        rows = []
+        for row in matrix:
+            terms = []
+            for term in row:
+                terms.append(chess_dict[term])
+            rows.append(terms)
+        return rows
 
 
 def main():
     chess_trainer = ChessTrainer(1000)
     chess_trainer.initializeData()
+    matrix = chess_trainer.makeMatrix(chess_trainer.board_)
+    print(chess_trainer.translate(matrix,chess_trainer.chess_dict_))
 
 if __name__ == "__main__":
     main()
