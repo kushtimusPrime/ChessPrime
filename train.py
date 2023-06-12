@@ -82,9 +82,10 @@ class ChessTrainer:
     # P P P P P P P P
     # R N B Q K B N R
     # Opponent is lowercase, and we are uppercase
+
+    # board_rep is a 6x8x8 matrix where 6 refers to each type of piece, and 8x8 for the board
+    # 1 is our piece and -1 is their piece
     def boardToRep(self,board):
-        print("Start board 2 rep")
-        print(board)
         pieces = ['p','r','n','b','q','k']
         layers = []
         for piece in pieces:
@@ -108,6 +109,23 @@ class ChessTrainer:
                     row_str_list[j] = 0
             board_mat.append(row_str_list)
         return np.array(board_mat)
+
+    def moveToRep(self,move,board):
+        print(board)
+        board.push(move)
+        move_str = str(move)
+
+        from_output_layer = np.zeros((8,8))
+        from_row = 8 - int(move_str[1])
+        from_column = self.letter_2_num_[move_str[0]]
+        from_output_layer[from_row,from_column] = 1
+
+        to_output_layer = np.zeros((8,8))
+        to_row = 8 - int(move_str[3])
+        to_column = self.letter_2_num_[move_str[2]]
+        to_output_layer[to_row,to_column] = 1
+
+        return np.stack([from_output_layer,to_output_layer])
 
     def makeMatrix(self,board): 
         pgn = board.epd()
@@ -139,10 +157,21 @@ class ChessTrainer:
         for game in range(len(self.total_games_)):
             print("Game: " + str(game))
             board = chess.Board()
-            print(board)
             for number, move in enumerate(self.total_games_[game].mainline_moves()):
+                self.moveToRep(move,board)
                 print("Move Number: " + str(number))
-                print("Move: " + str(move))
+                #print("Move: " + str(move))
+                #board.push(move)
+                #move_str = str(move)
+                #from_output_layer = np.zeros((8,8))
+                #from_row = 8 - int(move_str[1])
+                #from_column = self.letter_2_num_[move_str[0]]
+                #from_output_layer[from_row,from_column] = 1
+
+
+                #print(from_output_layer)
+                #if(number > 1):
+                #    exit()
             
         print("End data setup")
 
@@ -150,7 +179,7 @@ class ChessTrainer:
 def main():
     chess_trainer = ChessTrainer(1)
     chess_trainer.initializeData()
-    chess_trainer.boardToRep(chess.Board())
+    chess_trainer.dataSetup()
     #chess_trainer.dataSetup()
 
 if __name__ == "__main__":
