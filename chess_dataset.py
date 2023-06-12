@@ -37,7 +37,6 @@ class ChessDataset(Dataset):
                 except:
                     continue
                     #print("Tough")
-        print("Game count: " + str(self.total_num_games_))
 
         for game in range(len(self.total_games_)):
             board = chess.Board()
@@ -46,12 +45,10 @@ class ChessDataset(Dataset):
                 y = self.moveToRep(move,board)
                 if(number % 2 == 1):
                     X *= -1
-                self.X_list_.append(X)
-                self.y_list_.append(y)
+                self.X_list_.append(X.float())
+                self.y_list_.append(y.float())
 
     def __len__(self):
-        print(len(self.X_list_))
-        print(len(self.y_list_))
         return len(self.X_list_)
 
     def __getitem__(self,index):
@@ -76,7 +73,7 @@ class ChessDataset(Dataset):
         for piece in pieces:
             layers.append(self.createRepLayer(board,piece))
         board_rep = np.stack(layers)
-        return torch.tensor(board_rep)
+        return torch.tensor(board_rep).unsqueeze(0)
 
     def createRepLayer(self,board,piece_char):
         board_str = str(board)
@@ -110,4 +107,4 @@ class ChessDataset(Dataset):
         to_output_layer[to_row,to_column] = 1
 
         move_numpy_matrix = np.stack([from_output_layer,to_output_layer])
-        return torch.tensor(move_numpy_matrix)
+        return torch.tensor(move_numpy_matrix).unsqueeze(0)
