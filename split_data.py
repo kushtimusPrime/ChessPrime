@@ -1,5 +1,6 @@
 import csv
 
+# Count all the games in the dataset
 total_games = 0
 with open('data/metadata.csv', newline='') as csvfile:
     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
@@ -10,10 +11,13 @@ with open('data/metadata.csv', newline='') as csvfile:
             total_games += int(row_list[1])
         i = i + 1
 print(total_games)
+
+# Divide by 2 to split into equal size test and training games
 split_game = total_games / 2
 test_game_start = None
 test_game_stop = None
 
+# Figure out how to group the pgn files so they have roughly the same number of games
 game_count = 0
 with open('data/metadata.csv', newline='') as csvfile:
     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
