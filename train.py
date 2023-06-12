@@ -13,6 +13,8 @@ class ChessTrainer:
         self.total_games_ = [];
         self.total_num_games_ = 0
         self.total_game_limit_ = total_game_limit
+        self.letter_2_num_ = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e':4, 'f': 5, 'g': 6, 'h': 7}
+        self.num_2_letter_ = {0: 'a', 1: 'b', 2:'c', 3:'d', 4:'e', 5: 'f', 6: 'g', 7:'h'}
         self.chess_dict_ = {
             'p' : [1,0,0,0,0,0,0,0,0,0,0,0],
             'P' : [0,0,0,0,0,0,1,0,0,0,0,0],
@@ -70,6 +72,43 @@ class ChessTrainer:
                     print("Tough")
         #print("Game count: " + str(self.total_num_games_))
 
+    # board formatted as 
+    # r n b q k b n r
+    # p p p p p p p p
+    # . . . . . . . .
+    # . . . . . . . .
+    # . . . . . . . .
+    # . . . . . . . .
+    # P P P P P P P P
+    # R N B Q K B N R
+    # Opponent is lowercase, and we are uppercase
+    def boardToRep(self,board):
+        print("Start board 2 rep")
+        print(board)
+        pieces = ['p','r','n','b','q','k']
+        layers = []
+        for piece in pieces:
+            layers.append(self.createRepLayer(board,piece))
+        board_rep = np.stack(layers)
+        return board_rep
+
+    def createRepLayer(self,board,piece_char):
+        board_str = str(board)
+        board_str_list = board_str.split('\n')
+        board_mat = []
+        for i in range(len(board_str_list)):
+            row_str = board_str_list[i]
+            row_str_list = row_str.split(' ')
+            for j in range(len(row_str_list)):
+                if(row_str_list[j] == piece_char):
+                    row_str_list[j] = -1
+                elif(row_str_list[j] == piece_char.upper()):
+                    row_str_list[j] = 1
+                else:
+                    row_str_list[j] = 0
+            board_mat.append(row_str_list)
+        return np.array(board_mat)
+
     def makeMatrix(self,board): 
         pgn = board.epd()
         foo = []  
@@ -111,7 +150,8 @@ class ChessTrainer:
 def main():
     chess_trainer = ChessTrainer(1)
     chess_trainer.initializeData()
-    chess_trainer.dataSetup()
+    chess_trainer.boardToRep(chess.Board())
+    #chess_trainer.dataSetup()
 
 if __name__ == "__main__":
     main()
