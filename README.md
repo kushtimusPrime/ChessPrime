@@ -12,3 +12,9 @@ Got dataset from: https://www.kaggle.com/datasets/robikscube/this-week-in-chess-
 sudo apt-get install unzip
 unzip archive.zip -d data/
  ```
+
+ We want to split test and train data 50/50.
+ ```
+ python3 split_data.py
+ ```
+ 5 numbers will be printed. The first number is the total number of games in the dataset. The second and third number refers to the start and stop files that you should split it into. (For instance, if you get 1000 and 1339, your test folder should contain files twic1000.pgn to twic1339.pgn. All other files should go to test folder). The fourth number refers to the number of test games.
