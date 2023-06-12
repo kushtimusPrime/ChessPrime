@@ -73,7 +73,7 @@ class ChessDataset(Dataset):
         for piece in pieces:
             layers.append(self.createRepLayer(board,piece))
         board_rep = np.stack(layers)
-        return torch.tensor(board_rep).unsqueeze(0)
+        return torch.tensor(board_rep)
 
     def createRepLayer(self,board,piece_char):
         board_str = str(board)
@@ -107,4 +107,4 @@ class ChessDataset(Dataset):
         to_output_layer[to_row,to_column] = 1
 
         move_numpy_matrix = np.stack([from_output_layer,to_output_layer])
-        return torch.tensor(move_numpy_matrix).unsqueeze(0)
+        return torch.tensor(move_numpy_matrix)
