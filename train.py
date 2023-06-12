@@ -48,11 +48,12 @@ class ChessTrainer:
             7 : [0,0,0,0,0,1,0],
             8 : [0,0,0,0,0,0,1],
         }
-        self.board_ = chess.Board()
+        self.X_ = []
+        self.y_ = []
     
     def initializeData(self):
         for pgn_file_name in self.pgn_file_names_:
-            print("Game count: " + str(self.total_num_games_))
+            #print("Game count: " + str(self.total_num_games_))
             pgn_data_path = self.data_path_ + "/" + pgn_file_name
             pgn = None
             pgn = open(pgn_data_path)
@@ -67,7 +68,7 @@ class ChessTrainer:
                         thru_all_games = True
                 except:
                     print("Tough")
-        print("Game count: " + str(self.total_num_games_))
+        #print("Game count: " + str(self.total_num_games_))
 
     def makeMatrix(self,board): 
         pgn = board.epd()
@@ -94,12 +95,23 @@ class ChessTrainer:
             rows.append(terms)
         return rows
 
+    def dataSetup(self):
+        print("Start data setup")
+        for game in range(len(self.total_games_)):
+            print("Game: " + str(game))
+            board = chess.Board()
+            print(board)
+            for number, move in enumerate(self.total_games_[game].mainline_moves()):
+                print("Move Number: " + str(number))
+                print("Move: " + str(move))
+            
+        print("End data setup")
+
 
 def main():
-    chess_trainer = ChessTrainer(1000)
+    chess_trainer = ChessTrainer(1)
     chess_trainer.initializeData()
-    matrix = chess_trainer.makeMatrix(chess_trainer.board_)
-    print(chess_trainer.translate(matrix,chess_trainer.chess_dict_))
+    chess_trainer.dataSetup()
 
 if __name__ == "__main__":
     main()
