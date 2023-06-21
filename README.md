@@ -10,7 +10,9 @@ Install necessary libraries with
 Got dataset from: https://www.kaggle.com/datasets/robikscube/this-week-in-chess-archive?resource=download
 ``` 
 sudo apt-get install unzip
-unzip archive.zip -d data/
+pip3 install gdown
+gdown 1_l05GZQ1ExDo-PuUOD0bKkU9QMra3iL7 -O ~/data.zip
+unzip ~/data.zip
  ```
 
  We want to split test and train data 50/50.

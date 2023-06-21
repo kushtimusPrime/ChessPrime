@@ -4,17 +4,26 @@ from chess_net import module, ChessNet
 from chess_loss import ChessLoss
 import torch
 import wandb
+from torch.nn.parallel import DataParallel
+import os
+import torch.multiprocessing as mp
 
 def main():
+    cpu_count = mp.cpu_count()
+    print("Number of CPU cores:", cpu_count)
     wandb.login()
-    train_dataset = ChessDataset(total_game_limit = 10)
+    total_game_limit_num = float('inf')
+    train_dataset = ChessDataset(total_game_limit = total_game_limit_num)
     print("Loaded train dataset")
-    test_dataset = ChessDataset(total_game_limit=10)
+    test_dataset = ChessDataset(total_game_limit=total_game_limit_num,is_train = False)
     print("Loaded test dataset")
-    batch_size = 32
-    train_dataloader = DataLoader(train_dataset,batch_size,shuffle=True,drop_last=True)
-    test_dataloader = DataLoader(test_dataset,batch_size,shuffle=False)
+    train_dataset_size = train_dataset.__len__()
+    print("Train dataset size: " + str(train_dataset_size))
+    batch_size = 32 * 4
+    train_dataloader = DataLoader(train_dataset,batch_size,shuffle=True,drop_last=True,num_workers=cpu_count)
+    test_dataloader = DataLoader(test_dataset,batch_size,shuffle=False,num_workers=cpu_count)
     model = ChessNet()
+    model = DataParallel(model)
     loss_fn = ChessLoss()
     learning_rate = 0.001
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
@@ -23,7 +32,8 @@ def main():
     else:
         device = torch.device('cpu')
     model = model.to(device)
-    num_epochs = 20
+    num_epochs = int(train_dataset_size / batch_size)
+    print("Num epochs: " + str(num_epochs))
     training_losses = []
     test_losses = []
     run = wandb.init(
@@ -48,10 +58,12 @@ def main():
             optimizer.step()
             train_loss += loss.item()
             i = i + 1
+            if(i % 1000 == 0):
+                print("Making progress: " + str(i))
         if(i > 0):
             train_loss /= i
             training_losses.append(train_loss)
-            print("Epoch " + str(epoch) + ": " + str(train_loss))
+            print("Epoch " + str(epoch) + "/ " + str(num_epochs) +": " + str(train_loss))
             wandb.log({"Training Loss": train_loss})
 
         if(epoch % 10 == 0):
