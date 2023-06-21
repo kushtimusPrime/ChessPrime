@@ -1,2 +1,5 @@
 data/*
 archive.zip
+__pycache__/*
+models/*
+wandb/*

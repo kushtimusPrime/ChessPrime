@@ -1,105 +1,95 @@
+from chess_dataset import ChessDataset
+from torch.utils.data import Dataset, DataLoader
+from chess_net import module, ChessNet
+from chess_loss import ChessLoss
+import torch
+import wandb
+from torch.nn.parallel import DataParallel
 import os
-import chess
-import chess.pgn
-import numpy as np
-import pandas as pd
-from tensorflow import keras
-from tensorflow.keras import layers
-
-class ChessTrainer:
-    def __init__(self,total_game_limit = 100000):
-        self.data_path_ = "data/pgns"
-        self.pgn_file_names_ = os.listdir(self.data_path_)
-        self.total_games_ = [];
-        self.total_num_games_ = 0
-        self.total_game_limit_ = total_game_limit
-        self.chess_dict_ = {
-            'p' : [1,0,0,0,0,0,0,0,0,0,0,0],
-            'P' : [0,0,0,0,0,0,1,0,0,0,0,0],
-            'n' : [0,1,0,0,0,0,0,0,0,0,0,0],
-            'N' : [0,0,0,0,0,0,0,1,0,0,0,0],
-            'b' : [0,0,1,0,0,0,0,0,0,0,0,0],
-            'B' : [0,0,0,0,0,0,0,0,1,0,0,0],
-            'r' : [0,0,0,1,0,0,0,0,0,0,0,0],
-            'R' : [0,0,0,0,0,0,0,0,0,1,0,0],
-            'q' : [0,0,0,0,1,0,0,0,0,0,0,0],
-            'Q' : [0,0,0,0,0,0,0,0,0,0,1,0],
-            'k' : [0,0,0,0,0,1,0,0,0,0,0,0],
-            'K' : [0,0,0,0,0,0,0,0,0,0,0,1],
-            '.' : [0,0,0,0,0,0,0,0,0,0,0,0],
-        }
-        self.alpha_dict_ = {
-            'a' : [0,0,0,0,0,0,0],
-            'b' : [1,0,0,0,0,0,0],
-            'c' : [0,1,0,0,0,0,0],
-            'd' : [0,0,1,0,0,0,0],
-            'e' : [0,0,0,1,0,0,0],
-            'f' : [0,0,0,0,1,0,0],
-            'g' : [0,0,0,0,0,1,0],
-            'h' : [0,0,0,0,0,0,1],
-        }
-        self.number_dict_ = {
-            1 : [0,0,0,0,0,0,0],
-            2 : [1,0,0,0,0,0,0],
-            3 : [0,1,0,0,0,0,0],
-            4 : [0,0,1,0,0,0,0],
-            5 : [0,0,0,1,0,0,0],
-            6 : [0,0,0,0,1,0,0],
-            7 : [0,0,0,0,0,1,0],
-            8 : [0,0,0,0,0,0,1],
-        }
-        self.board_ = chess.Board()
-    
-    def initializeData(self):
-        for pgn_file_name in self.pgn_file_names_:
-            print("Game count: " + str(self.total_num_games_))
-            pgn_data_path = self.data_path_ + "/" + pgn_file_name
-            pgn = None
-            pgn = open(pgn_data_path)
-            thru_all_games = False
-            while ((self.total_num_games_ < self.total_game_limit_) and (not thru_all_games)):
-                try:
-                    game = chess.pgn.read_game(pgn)
-                    self.total_num_games_ = self.total_num_games_ + 1
-                    if game is not None:
-                        self.total_games_.append(game)
-                    else:
-                        thru_all_games = True
-                except:
-                    print("Tough")
-        print("Game count: " + str(self.total_num_games_))
-
-    def makeMatrix(self,board): 
-        pgn = board.epd()
-        foo = []  
-        pieces = pgn.split(" ", 1)[0]
-        rows = pieces.split("/")
-        for row in rows:
-            foo2 = []  
-            for thing in row:
-                if thing.isdigit():
-                    for i in range(0, int(thing)):
-                        foo2.append('.')
-                else:
-                    foo2.append(thing)
-            foo.append(foo2)
-        return foo
-
-    def translate(self,matrix,chess_dict):
-        rows = []
-        for row in matrix:
-            terms = []
-            for term in row:
-                terms.append(chess_dict[term])
-            rows.append(terms)
-        return rows
-
+import torch.multiprocessing as mp
 
 def main():
-    chess_trainer = ChessTrainer(1000)
-    chess_trainer.initializeData()
-    matrix = chess_trainer.makeMatrix(chess_trainer.board_)
-    print(chess_trainer.translate(matrix,chess_trainer.chess_dict_))
+    cpu_count = mp.cpu_count()
+    print("Number of CPU cores:", cpu_count)
+    wandb.login()
+    total_game_limit_num = float('inf')
+    train_dataset = ChessDataset(total_game_limit = total_game_limit_num)
+    print("Loaded train dataset")
+    test_dataset = ChessDataset(total_game_limit=total_game_limit_num,is_train = False)
+    print("Loaded test dataset")
+    train_dataset_size = train_dataset.__len__()
+    print("Train dataset size: " + str(train_dataset_size))
+    batch_size = 32 * 4
+    train_dataloader = DataLoader(train_dataset,batch_size,shuffle=True,drop_last=True,num_workers=cpu_count)
+    test_dataloader = DataLoader(test_dataset,batch_size,shuffle=False,num_workers=cpu_count)
+    model = ChessNet()
+    model = DataParallel(model)
+    loss_fn = ChessLoss()
+    learning_rate = 0.001
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
+    model = model.to(device)
+    num_epochs = int(train_dataset_size / batch_size)
+    print("Num epochs: " + str(num_epochs))
+    training_losses = []
+    test_losses = []
+    run = wandb.init(
+        # Set the project where this run will be logged
+        project="chess_net_1",
+        # Track hyperparameters and run metadata
+        config={
+            "learning_rate": learning_rate,
+            "epochs": num_epochs,
+        })
+    for epoch in range(num_epochs):
+        model.train()
+        train_loss = 0
+        i = 0
+        for inputs,labels in train_dataloader:
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = loss_fn(outputs,labels)
+            loss.backward()
+            optimizer.step()
+            train_loss += loss.item()
+            i = i + 1
+            if(i % 1000 == 0):
+                print("Making progress: " + str(i))
+        if(i > 0):
+            train_loss /= i
+            training_losses.append(train_loss)
+            print("Epoch " + str(epoch) + "/ " + str(num_epochs) +": " + str(train_loss))
+            wandb.log({"Training Loss": train_loss})
 
-if __name__ == "__main__":
+        if(epoch % 10 == 0):
+            model.eval()
+            test_loss = 0
+            i = 0
+            with torch.no_grad():
+                for inputs,labels in test_dataloader:
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
+                    outputs = model(inputs)
+                    loss = loss_fn(outputs,labels)
+                    test_loss += loss.item()
+                    i = i + 1
+            if(i > 0):
+                test_loss /= i
+                test_losses.append(test_loss)
+                print("Test loss: " + str(test_loss))
+                wandb.log({"Testing Loss": test_loss})
+                if(test_loss <= min(test_losses)):
+                    torch.save(model.state_dict(),'models/model.pth')
+                    wandb.save('models/model.pth')
+                    print("Save model")
+
+    print("Done")
+
+
+if __name__ == '__main__':
     main()
