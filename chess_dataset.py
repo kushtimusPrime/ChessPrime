@@ -36,6 +36,7 @@ class ChessDataset(Dataset):
                         self.total_games_.append(game)
                     else:
                         thru_all_games = True
+                    print("Game num: " + str(self.total_num_games_))
                 except:
                     continue
                     #print("Tough")
