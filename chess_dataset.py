@@ -40,8 +40,7 @@ class ChessDataset(Dataset):
                     #print("Tough")
 
         for game in range(len(self.total_games_)):
-            if(game % 1000 == 0):
-                print("Game number: " + str(game))
+            print("Game number: " + str(game))
             board = chess.Board()
             for number, move in enumerate(self.total_games_[game].mainline_moves()):
                 X = self.boardToRep(board)
