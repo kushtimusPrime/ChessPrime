@@ -45,12 +45,15 @@ class ChessDataset(Dataset):
             print("Game number: " + str(game),flush=True)
             board = chess.Board()
             for number, move in enumerate(self.total_games_[game].mainline_moves()):
-                X = self.boardToRep(board)
-                y = self.moveToRep(move,board)
-                if(number % 2 == 1):
-                    X *= -1
-                self.X_list_.append(X.float())
-                self.y_list_.append(y.float())
+                try:
+                    X = self.boardToRep(board)
+                    y = self.moveToRep(move,board)
+                    if(number % 2 == 1):
+                        X *= -1
+                    self.X_list_.append(X.float())
+                    self.y_list_.append(y.float())
+                except:
+                    continue
 
     def __len__(self):
         return len(self.X_list_)
