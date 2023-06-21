@@ -19,6 +19,7 @@ class ChessDataset(Dataset):
         self.letter_2_num_ = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e':4, 'f': 5, 'g': 6, 'h': 7}
         self.X_list_ = []
         self.y_list_ = []
+        print("Starting first loop",flush=True)
 
         # Limits the training games to the total game limit amount
         for pgn_file_name in self.pgn_file_names_:
@@ -38,7 +39,7 @@ class ChessDataset(Dataset):
                 except:
                     continue
                     #print("Tough")
-
+        print("Ending first loop",flush=True)
         for game in range(len(self.total_games_)):
             print("Game number: " + str(game),flush=True)
             board = chess.Board()
