@@ -20,7 +20,7 @@ def main():
     print("Loaded test dataset")
     train_dataset_size = train_dataset.__len__()
     print("Train dataset size: " + str(train_dataset_size))
-    batch_size = 32 * 4
+    batch_size = 32
     train_dataloader = DataLoader(train_dataset,batch_size,shuffle=True,drop_last=True,num_workers=cpu_count)
     test_dataloader = DataLoader(test_dataset,batch_size,shuffle=False,num_workers=cpu_count)
     model = ChessNet()
