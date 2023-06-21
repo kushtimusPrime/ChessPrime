@@ -13,10 +13,10 @@ def main():
     print("Number of CPU cores:", cpu_count)
     wandb.login()
     print("Starting training")
-    total_game_limit_num = 5000
+    total_game_limit_num = 158000
     train_dataset = ChessDataset(total_game_limit = total_game_limit_num)
     print("Loaded train dataset")
-    test_dataset = ChessDataset(total_game_limit=total_game_limit_num,is_train = False)
+    test_dataset = ChessDataset(total_game_limit=total_game_limit_num/4,is_train = False)
     print("Loaded test dataset")
     train_dataset_size = train_dataset.__len__()
     print("Train dataset size: " + str(train_dataset_size))
@@ -59,8 +59,8 @@ def main():
             optimizer.step()
             train_loss += loss.item()
             i = i + 1
-            if(i % 1000 == 0):
-                print("Making progress: " + str(i))
+            print("Progress: " + str(i))
+
         if(i > 0):
             train_loss /= i
             training_losses.append(train_loss)
