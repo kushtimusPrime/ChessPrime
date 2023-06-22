@@ -8,7 +8,9 @@ Install necessary libraries with
 
 ## Data
 Got dataset from: https://www.kaggle.com/datasets/robikscube/this-week-in-chess-archive?resource=download
-``` 
+```
+sudo apt-get update
+sudo apt-get upgrade
 cd ~/ChessPrime
 sudo apt-get install unzip
 pip3 install gdown
