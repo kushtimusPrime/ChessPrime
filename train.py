@@ -13,7 +13,7 @@ def main():
     print("Number of CPU cores:", cpu_count)
     wandb.login()
     print("Starting training")
-    total_game_limit_num = 120000
+    total_game_limit_num = 130000
     train_dataset = ChessDataset(total_game_limit = total_game_limit_num)
     print("Loaded train dataset")
     test_dataset = ChessDataset(total_game_limit=total_game_limit_num/4,is_train = False)
