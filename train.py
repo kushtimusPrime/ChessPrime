@@ -22,10 +22,9 @@ def main():
     print("Train dataset size: " + str(train_dataset_size))
     batch_size = 32
     passes = train_dataset_size / batch_size
-    train_dataloader = DataLoader(train_dataset,batch_size,shuffle=True,drop_last=True,num_workers=cpu_count)
-    test_dataloader = DataLoader(test_dataset,batch_size,shuffle=False,num_workers=cpu_count)
+    train_dataloader = DataLoader(train_dataset,batch_size,shuffle=True,drop_last=True)
+    test_dataloader = DataLoader(test_dataset,batch_size,shuffle=False)
     model = ChessNet()
-    model = DataParallel(model)
     loss_fn = ChessLoss()
     learning_rate = 0.001
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
