@@ -7,44 +7,43 @@ import numpy as np
 
 class ChessDataset(Dataset):
     def __init__(self,total_game_limit = float('inf'),is_train = True):
-        self.data_path_ = ""
+        data_path = ""
         if(is_train):
-            self.data_path_ = "data/pgns/train"
+            data_path = "data/pgns/train"
         else:
-            self.data_path_ = "data/pgns/test"
-        self.pgn_file_names_ = os.listdir(self.data_path_)
-        self.total_games_ = [];
-        self.total_num_games_ = 0
-        self.total_game_limit_ = total_game_limit
+            data_path = "data/pgns/test"
+        pgn_file_names = os.listdir(data_path)
+        total_games = [];
+        total_num_games = 0
         self.letter_2_num_ = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e':4, 'f': 5, 'g': 6, 'h': 7}
         self.X_list_ = []
         self.y_list_ = []
         print("Starting first loop",flush=True)
 
         # Limits the training games to the total game limit amount
-        for pgn_file_name in self.pgn_file_names_:
-            pgn_data_path = self.data_path_ + "/" + pgn_file_name
+        for pgn_file_name in pgn_file_names:
+            pgn_data_path = data_path + "/" + pgn_file_name
             pgn = None
             pgn = open(pgn_data_path)
             thru_all_games = False
             
-            while ((self.total_num_games_ < self.total_game_limit_) and (not thru_all_games)):
+            while ((total_num_games < total_game_limit) and (not thru_all_games)):
                 try:
                     game = chess.pgn.read_game(pgn)
-                    self.total_num_games_ = self.total_num_games_ + 1
+                    total_num_games = total_num_games + 1
                     if game is not None:
-                        self.total_games_.append(game)
+                        total_games.append(game)
                     else:
                         thru_all_games = True
-                    print("Game num: " + str(self.total_num_games_))
+                    print("Game num: " + str(total_num_games))
                 except:
                     continue
                     #print("Tough")
         print("Ending first loop",flush=True)
-        for game in range(len(self.total_games_)):
+        for game in range(len(total_games)):
             print("Game number: " + str(game),flush=True)
             board = chess.Board()
-            for number, move in enumerate(self.total_games_[game].mainline_moves()):
+            for number, move in enumerate(total_games[game].mainline_moves()):
                 try:
                     X = self.boardToRep(board)
                     y = self.moveToRep(move,board)
