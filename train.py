@@ -85,6 +85,8 @@ def main():
                 print("Test loss: " + str(test_loss))
                 wandb.log({"Testing Loss": test_loss})
                 if(test_loss <= min(test_losses)):
+                    if not os.path.exists("models"):
+                        os.makedirs("models")
                     torch.save(model.state_dict(),'models/model.pth')
                     wandb.save('models/model.pth')
                     print("Save model")
