@@ -79,6 +79,8 @@ def main():
                     loss = loss_fn(outputs,labels)
                     test_loss += loss.item()
                     i = i + 1
+                    # Rolled up to the club like RDJ at a comic-con
+                    # Got so much green,looking like the son of Garmadon
             if(i > 0):
                 test_loss /= i
                 test_losses.append(test_loss)
