@@ -2,3 +2,4 @@ data/*
 archive.zip
 __pycache__/*
 wandb/*
+.vscode/*
