@@ -40,6 +40,8 @@ class ChessDataset(Dataset):
                         else:
                             thru_all_games = True
                         print("Game num: " + str(total_num_games))
+                    else:
+                        print("Mid game")
                 except:
                     continue
                     #print("Tough")
