@@ -18,6 +18,7 @@ class ChessDataset(Dataset):
         self.letter_2_num_ = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e':4, 'f': 5, 'g': 6, 'h': 7}
         self.X_list_ = []
         self.y_list_ = []
+        elo_threshold = 2000
         print("Starting first loop",flush=True)
 
         # Limits the training games to the total game limit amount
@@ -30,12 +31,15 @@ class ChessDataset(Dataset):
             while ((total_num_games < total_game_limit) and (not thru_all_games)):
                 try:
                     game = chess.pgn.read_game(pgn)
-                    total_num_games = total_num_games + 1
-                    if game is not None:
-                        total_games.append(game)
-                    else:
-                        thru_all_games = True
-                    print("Game num: " + str(total_num_games))
+                    white_elo = int(game.headers['WhiteElo'])
+                    black_elo = int(game.headers['BlackElo'])
+                    if(white_elo >= elo_threshold and black_elo >= elo_threshold):
+                        total_num_games = total_num_games + 1
+                        if game is not None:
+                            total_games.append(game)
+                        else:
+                            thru_all_games = True
+                        print("Game num: " + str(total_num_games))
                 except:
                     continue
                     #print("Tough")

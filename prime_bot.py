@@ -96,27 +96,43 @@ def main():
                     x *= -1
                 x = x.unsqueeze(0)
                 move = model(x)
-                vals = []
-                froms = [str(legal_move)[:2] for legal_move in legal_moves]
-                froms = list(set(froms))
-                for from_ in froms:
-                    val = move[0][0,:,:][8 - int(from_[1]),letter_2_num[from_[0]]]
-                    vals.append(val)
-                probs = distribution_over_moves(vals)
-                choosen_from = str(np.random.choice(froms,size=1,p=probs)[0])[:2]
-
-                vals = []
+                the_real_move = legal_moves[0]
+                move_val = -float('inf')
                 for legal_move in legal_moves:
-                    from_ = str(legal_move)[:2]
-                    if from_ == choosen_from:
-                        to = str(legal_move)[2:]
-                        val = move[0][1,:,:][8 - int(to[1]),letter_2_num[to[0]]]
-                        val = val.detach()
-                        vals.append(val)
-                    else:
-                        vals.append(0)
-                choosen_move = legal_moves[np.argmax(vals)]
-                board.push(choosen_move)
+                    from_move = str(legal_move)[:2]
+                    from_val = move[0][0,:,:][8 - int(from_move[1]),letter_2_num[from_move[0]]].detach()
+                    to_move = str(legal_move)[2:]
+                    to_val = move[0][1,:,:][8 - int(to_move[1]),letter_2_num[to_move[0]]].detach()
+                    total_val = from_val + to_val
+                    if(total_val > move_val):
+                        the_real_move = legal_move
+                        move_val = total_val
+                print(the_real_move)
+                board.push(the_real_move)
+
+                # vals = []
+                # froms = [str(legal_move)[:2] for legal_move in legal_moves]
+                # #print(froms)
+                # froms = list(set(froms))
+                # for from_ in froms:
+                #     val = move[0][0,:,:][8 - int(from_[1]),letter_2_num[from_[0]]]
+                #     vals.append(val)
+                # probs = distribution_over_moves(vals)
+                # choosen_from = str(np.random.choice(froms,size=1,p=probs)[0])[:2]
+
+                # vals = []
+                # for legal_move in legal_moves:
+                #     from_ = str(legal_move)[:2]
+                #     if from_ == choosen_from:
+                #         to = str(legal_move)[2:]
+                #         val = move[0][1,:,:][8 - int(to[1]),letter_2_num[to[0]]]
+                #         val = val.detach()
+                #         vals.append(val)
+                #     else:
+                #         vals.append(0)
+                # choosen_move = legal_moves[np.argmax(vals)]
+                # print(choosen_move)
+                # board.push(choosen_move)
         else:
             print("Current Board")
             print("Capital is white")
