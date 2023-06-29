@@ -20,7 +20,7 @@ class ChessDataset(Dataset):
         self.y_list_ = []
         elo_threshold = 2000
         print("Starting first loop",flush=True)
-
+        file_count = 1
         # Limits the training games to the total game limit amount
         for pgn_file_name in pgn_file_names:
             pgn_data_path = data_path + "/" + pgn_file_name
@@ -31,20 +31,23 @@ class ChessDataset(Dataset):
             while ((total_num_games < total_game_limit) and (not thru_all_games)):
                 try:
                     game = chess.pgn.read_game(pgn)
-                    white_elo = int(game.headers['WhiteElo'])
-                    black_elo = int(game.headers['BlackElo'])
-                    if(white_elo >= elo_threshold and black_elo >= elo_threshold):
-                        total_num_games = total_num_games + 1
-                        if game is not None:
-                            total_games.append(game)
-                        else:
-                            thru_all_games = True
-                        print("Game num: " + str(total_num_games))
+                    if game is None:
+                        thru_all_games = True
                     else:
-                        print("Mid game")
-                except:
+                        white_elo = int(game.headers['WhiteElo'])
+                        black_elo = int(game.headers['BlackElo'])
+                        if(white_elo >= elo_threshold and black_elo >= elo_threshold):
+                            total_num_games = total_num_games + 1
+                            if game is not None:
+                                total_games.append(game)
+                            else:
+                                thru_all_games = True
+                            print("Game num: " + str(total_num_games))
+                        else:
+                            print("Mid game")
+                except Exception as e: 
                     continue
-                    #print("Tough")
+            file_count += 1
         print("Ending first loop",flush=True)
         for game in range(len(total_games)):
             print("Game number: " + str(game),flush=True)
