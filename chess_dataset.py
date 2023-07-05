@@ -60,12 +60,15 @@ class ChessDataset(Dataset):
                                     if(black_elo > 2000):
                                         player_good = True
                             else:
+                                print("White game count: " + str(white_game_count))
+                                print("Black game count: " + str(black_game_count))
+                                print(result)
                                 if(white_game_count >= white_game_limit):
                                     print("No more white games")
                                 elif(black_game_count >= black_game_limit):
                                     print("No more black games")
                                 else:
-                                    print("If neither of these counts is over " + black_game_count + " then we have a problem")
+                                    print("Weird result error")
                                     exit()
                             
                             try:
