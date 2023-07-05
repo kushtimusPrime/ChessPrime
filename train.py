@@ -11,7 +11,7 @@ import torch.multiprocessing as mp
 def main():
     cpu_count = mp.cpu_count()
     print("Number of CPU cores:", cpu_count)
-    wandb.login()
+    #wandb.login()
     print("Starting training")
     total_game_limit_num = 142000
     train_dataset = ChessDataset(total_game_limit = total_game_limit_num)
