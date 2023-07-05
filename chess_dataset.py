@@ -34,62 +34,65 @@ class ChessDataset(Dataset):
             thru_all_games = False
             
             while ((total_num_games < total_game_limit) and (not thru_all_games)):
-                game = chess.pgn.read_game(pgn)
-                if game is None:
-                    thru_all_games = True
-                else:
-                    result = game.headers['Result']
-                    # We only want winning games
-                    if(result != '1/2-1/2'):
-                        black_won = None
-                        player_good = False
-                        # White won
-                        if(result == '1-0' and white_game_count < white_game_limit):
-                            black_won = False
-                            if('WhiteElo' in game.headers):
-                                white_elo = int(game.headers['WhiteElo'])
-                                if(white_elo > 2000):
-                                    player_good = True
+                try:
+                    game = chess.pgn.read_game(pgn)
+                    if game is None:
+                        thru_all_games = True
+                    else:
+                        result = game.headers['Result']
+                        # We only want winning games
+                        if(result != '1/2-1/2'):
+                            black_won = None
+                            player_good = False
+                            # White won
+                            if(result == '1-0' and white_game_count < white_game_limit):
+                                black_won = False
+                                if('WhiteElo' in game.headers):
+                                    white_elo = int(game.headers['WhiteElo'])
+                                    if(white_elo > 2000):
+                                        player_good = True
 
-                        # Black won
-                        elif(result == '0-1' and black_game_count < black_game_limit):
-                            black_won = True
-                            if('BlackElo' in game.headers):
-                                black_elo = int(game.headers['BlackElo'])
-                                if(black_elo > 2000):
-                                    player_good = True
-                        else:
-                            if(white_game_count >= white_game_limit):
-                                print("No more white games")
-                            elif(black_game_count >= black_game_limit):
-                                print("No more black games")
+                            # Black won
+                            elif(result == '0-1' and black_game_count < black_game_limit):
+                                black_won = True
+                                if('BlackElo' in game.headers):
+                                    black_elo = int(game.headers['BlackElo'])
+                                    if(black_elo > 2000):
+                                        player_good = True
                             else:
-                                print("If neither of these counts is over " + black_game_count + " then we have a problem")
-                                exit()
-                        
-                        try:
-                            if(player_good):
-                                board = chess.Board()
-                                for number, move in enumerate(game.mainline_moves()):
-                                    X = self.boardToRep(board)
-                                    y = self.moveToRep(move,board)
-                                    # Even numbers are white
-                                    if(black_won and number % 2 == 1):
-                                        X *= -1
-                                        self.X_list_.append(X.float())
-                                        self.y_list_.append(y.float())
-                                    elif(not black_won and number % 2 == 0):
-                                        self.X_list_.append(X.float())
-                                        self.y_list_.append(y.float())
-                                
-                                total_num_games += 1
-                                if(black_won):
-                                    black_game_count += 1
+                                if(white_game_count >= white_game_limit):
+                                    print("No more white games")
+                                elif(black_game_count >= black_game_limit):
+                                    print("No more black games")
                                 else:
-                                    white_game_count += 1
-                                print(total_num_games)
-                        except AssertionError as e:
-                            print(e)
+                                    print("If neither of these counts is over " + black_game_count + " then we have a problem")
+                                    exit()
+                            
+                            try:
+                                if(player_good):
+                                    board = chess.Board()
+                                    for number, move in enumerate(game.mainline_moves()):
+                                        X = self.boardToRep(board)
+                                        y = self.moveToRep(move,board)
+                                        # Even numbers are white
+                                        if(black_won and number % 2 == 1):
+                                            X *= -1
+                                            self.X_list_.append(X.float())
+                                            self.y_list_.append(y.float())
+                                        elif(not black_won and number % 2 == 0):
+                                            self.X_list_.append(X.float())
+                                            self.y_list_.append(y.float())
+                                    
+                                    total_num_games += 1
+                                    if(black_won):
+                                        black_game_count += 1
+                                    else:
+                                        white_game_count += 1
+                                    print(total_num_games)
+                            except AssertionError as e:
+                                print(e)
+                except UnicodeDecodeError as e:
+                    print(e)
                                                      
         #         try:
         #             game = chess.pgn.read_game(pgn)
