@@ -57,22 +57,25 @@ class ChessDataset(Dataset):
                             print("Something's not right, nobody won")
                             exit()
                         
-                        if(player_good):
-                            board = chess.Board()
-                            for number, move in enumerate(game.mainline_moves()):
-                                X = self.boardToRep(board)
-                                y = self.moveToRep(move,board)
+                        try:
+                            if(player_good):
+                                board = chess.Board()
+                                for number, move in enumerate(game.mainline_moves()):
+                                    X = self.boardToRep(board)
+                                    y = self.moveToRep(move,board)
 
-                                # Even numbers are white
-                                if(black_won and number % 2 == 1):
-                                    X *= 1
-                                    self.X_list_.append(X.float())
-                                    self.y_list_.append(y.float())
-                                elif(not black_won and number % 2 == 0):
-                                    self.X_list_.append(X.float())
-                                    self.y_list_.append(y.float())
-                            total_num_games += 1
-                            print(total_num_games)
+                                    # Even numbers are white
+                                    if(black_won and number % 2 == 1):
+                                        X *= 1
+                                        self.X_list_.append(X.float())
+                                        self.y_list_.append(y.float())
+                                    elif(not black_won and number % 2 == 0):
+                                        self.X_list_.append(X.float())
+                                        self.y_list_.append(y.float())
+                                total_num_games += 1
+                                print(total_num_games)
+                        except AssertionError as e:
+                            print(e)
                                                                 
         #         try:
         #             game = chess.pgn.read_game(pgn)
