@@ -69,7 +69,6 @@ class ChessDataset(Dataset):
                                     print("No more black games")
                                 else:
                                     print("Weird result error")
-                                    exit()
                             
                             try:
                                 if(player_good):
