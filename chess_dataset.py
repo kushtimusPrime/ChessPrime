@@ -91,6 +91,8 @@ class ChessDataset(Dataset):
                                     print(total_num_games)
                             except AssertionError as e:
                                 print(e)
+                            except KeyError as e:
+                                print(e)
                 except UnicodeDecodeError as e:
                     print(e)
                                                      
