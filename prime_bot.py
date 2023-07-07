@@ -98,16 +98,19 @@ def main():
                 move = model(x)
                 the_real_move = legal_moves[0]
                 move_val = -float('inf')
+                move_vals = 0
                 for legal_move in legal_moves:
                     from_move = str(legal_move)[:2]
                     from_val = move[0][0,:,:][8 - int(from_move[1]),letter_2_num[from_move[0]]].detach()
                     to_move = str(legal_move)[2:]
                     to_val = move[0][1,:,:][8 - int(to_move[1]),letter_2_num[to_move[0]]].detach()
                     total_val = from_val + to_val
+                    move_vals = move_vals + total_val
                     if(total_val > move_val):
                         the_real_move = legal_move
                         move_val = total_val
                 print(the_real_move)
+                print("Confidence: " + str(move_val/move_vals))
                 board.push(the_real_move)
 
                 # vals = []
