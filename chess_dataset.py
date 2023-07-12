@@ -13,6 +13,10 @@ class ChessDataset(Dataset):
         else:
             data_path = "data/pgns/test"
         pgn_file_names = os.listdir(data_path)
+        white_game_limit = total_game_limit / 2
+        white_game_count = 0
+        black_game_limit = total_game_limit / 2
+        black_game_count = 0
         total_games = [];
         total_num_games = 0
         self.letter_2_num_ = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e':4, 'f': 5, 'g': 6, 'h': 7}
@@ -21,6 +25,7 @@ class ChessDataset(Dataset):
         elo_threshold = 2000
         print("Starting first loop",flush=True)
         file_count = 1
+        temp = False
         # Limits the training games to the total game limit amount
         for pgn_file_name in pgn_file_names:
             pgn_data_path = data_path + "/" + pgn_file_name
@@ -34,34 +39,98 @@ class ChessDataset(Dataset):
                     if game is None:
                         thru_all_games = True
                     else:
-                        white_elo = int(game.headers['WhiteElo'])
-                        black_elo = int(game.headers['BlackElo'])
-                        if(white_elo >= elo_threshold and black_elo >= elo_threshold):
-                            total_num_games = total_num_games + 1
-                            if game is not None:
-                                total_games.append(game)
+                        result = game.headers['Result']
+                        # We only want winning games
+                        if(result != '1/2-1/2'):
+                            black_won = None
+                            player_good = False
+                            # White won
+                            if(result == '1-0' and white_game_count < white_game_limit):
+                                black_won = False
+                                if('WhiteElo' in game.headers):
+                                    white_elo = int(game.headers['WhiteElo'])
+                                    if(white_elo > 2000):
+                                        player_good = True
+
+                            # Black won
+                            elif(result == '0-1' and black_game_count < black_game_limit):
+                                black_won = True
+                                if('BlackElo' in game.headers):
+                                    black_elo = int(game.headers['BlackElo'])
+                                    if(black_elo > 2000):
+                                        player_good = True
                             else:
-                                thru_all_games = True
-                            print("Game num: " + str(total_num_games))
-                        else:
-                            print("Mid game")
-                except Exception as e: 
-                    continue
-            file_count += 1
-        print("Ending first loop",flush=True)
-        for game in range(len(total_games)):
-            print("Game number: " + str(game),flush=True)
-            board = chess.Board()
-            for number, move in enumerate(total_games[game].mainline_moves()):
-                try:
-                    X = self.boardToRep(board)
-                    y = self.moveToRep(move,board)
-                    if(number % 2 == 1):
-                        X *= -1
-                    self.X_list_.append(X.float())
-                    self.y_list_.append(y.float())
-                except:
-                    continue
+                                print("White game count: " + str(white_game_count))
+                                print("Black game count: " + str(black_game_count))
+                                print(result)
+                                if(white_game_count >= white_game_limit):
+                                    print("No more white games")
+                                elif(black_game_count >= black_game_limit):
+                                    print("No more black games")
+                                else:
+                                    print("Weird result error")
+                            
+                            try:
+                                if(player_good):
+                                    board = chess.Board()
+                                    for number, move in enumerate(game.mainline_moves()):
+                                        X = self.boardToRep(board)
+                                        y = self.moveToRep(move,board)
+                                        # Even numbers are white
+                                        if(black_won and number % 2 == 1):
+                                            X *= -1
+                                            self.X_list_.append(X.float())
+                                            self.y_list_.append(y.float())
+                                        elif(not black_won and number % 2 == 0):
+                                            self.X_list_.append(X.float())
+                                            self.y_list_.append(y.float())
+                                    
+                                    total_num_games += 1
+                                    if(black_won):
+                                        black_game_count += 1
+                                    else:
+                                        white_game_count += 1
+                                    print(total_num_games)
+                            except AssertionError as e:
+                                print(e)
+                            except KeyError as e:
+                                print(e)
+                except UnicodeDecodeError as e:
+                    print(e)
+                                                     
+        #         try:
+        #             game = chess.pgn.read_game(pgn)
+        #             if game is None:
+        #                 thru_all_games = True
+        #             else:
+        #                 white_elo = int(game.headers['WhiteElo'])
+        #                 black_elo = int(game.headers['BlackElo'])
+        #                 if(white_elo >= elo_threshold and black_elo >= elo_threshold):
+        #                     total_num_games = total_num_games + 1
+        #                     if game is not None:
+        #                         total_games.append(game)
+        #                     else:
+        #                         thru_all_games = True
+        #                     print("Game num: " + str(total_num_games))
+        #                 else:
+        #                     print("Mid game")
+        #         except Exception as e: 
+        #             continue
+        #     file_count += 1
+        # print("Ending first loop",flush=True)
+        # for game in range(len(total_games)):
+        #     print("Game number: " + str(game),flush=True)
+        #     board = chess.Board()
+        #     for number, move in enumerate(total_games[game].mainline_moves()):
+        #         try:
+        #             X = self.boardToRep(board)
+        #             y = self.moveToRep(move,board)
+        #             if(number % 2 == 1):
+        #                 X *= -1
+        #             self.X_list_.append(X.float())
+        #             self.y_list_.append(y.float())
+        #         except:
+        #             continue
 
     def __len__(self):
         return len(self.X_list_)

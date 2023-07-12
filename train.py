@@ -13,7 +13,7 @@ def main():
     print("Number of CPU cores:", cpu_count)
     wandb.login()
     print("Starting training")
-    total_game_limit_num = 142000
+    total_game_limit_num = 315000
     train_dataset = ChessDataset(total_game_limit = total_game_limit_num)
     print("Loaded train dataset")
     test_dataset = ChessDataset(total_game_limit=total_game_limit_num/4,is_train = False)
@@ -49,6 +49,25 @@ def main():
             "learning_rate": learning_rate,
             "epochs": num_epochs,
         })
+
+    model.eval()
+    test_loss = 0
+    i = 0
+    with torch.no_grad():
+        for inputs,labels in test_dataloader:
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            outputs = model(inputs)
+            loss = loss_fn(outputs,labels)
+            test_loss += loss.item()
+            i = i + 1
+            # Rolled up to the club like RDJ at a comic-con
+            # Got so much green,looking like the son of Garmadon
+    if(i > 0):
+        test_loss /= i
+        test_losses.append(test_loss)
+        print("Test loss: " + str(test_loss))
+        wandb.log({"Testing Loss": test_loss})
     for epoch in range(num_epochs):
         model.train()
         train_loss = 0
